@@ -259,15 +259,17 @@ var commands = exports.commands = {
 	backhelp: ["/back - Unblocks challenges and/or private messages, if either are blocked."],
 
 	makeprivatechatroom: 'makechatroom',
-	makechatroom: function (target, room, user, connection, cmd) {
-		if (!this.can('makeroom')) return;
-
-		// `,` is a delimiter used by a lot of /commands
-		// `|` and `[` are delimiters used by the protocol
-		// `-` has special meaning in roomids
-		if (target.includes(',') || target.includes('|') || target.includes('[') || target.includes('-')) {
-			return this.errorReply("Room titles can't contain any of: ,|[-");
-		}
+	makechatroom: function (target, room, user) {
+                if (!this.can('makeroom')) return;
+                var id = toId(target);
+                if (!id) return this.parse('/help makechatroom');
+                if (Rooms.rooms[id]) return this.sendReply("The room '" + target + "' already exists.");
+                if (Rooms.global.addChatRoom(target)) {
+                        hangman.reset(id);
+                        return this.sendReply("The room '" + target + "' was created.");
+                }
+                return this.sendReply("An error occurred while trying to create the room '" + target + "'.");
+        },
 
 		var id = toId(target);
 		if (!id) return this.parse('/help makechatroom');
